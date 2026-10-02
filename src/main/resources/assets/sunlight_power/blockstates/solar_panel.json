@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": {"model": "sunlight_power:block/solar_panel"}
+  }
+}

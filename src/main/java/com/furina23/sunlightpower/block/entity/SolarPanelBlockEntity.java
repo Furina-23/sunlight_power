@@ -1,0 +1,159 @@
+package com.furina23.sunlightpower.block.entity;
+
+import com.furina23.sunlightpower.SunlightPower;
+import com.furina23.sunlightpower.logic.SolarGeneration;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.Container;
+import net.minecraft.network.chat.Component;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import com.furina23.sunlightpower.menu.SolarPanelMenu;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+
+public final class SolarPanelBlockEntity extends BlockEntity implements Container, ExtendedScreenHandlerFactory {
+    private long energy;
+    private ItemStack chargingStack = ItemStack.EMPTY;
+    private boolean interactionRequested;
+
+    public SolarPanelBlockEntity(BlockPos pos, BlockState state) {
+        super(SunlightPower.SOLAR_PANEL_ENTITY, pos, state);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, SolarPanelBlockEntity panel) {
+        panel.tickServer(level);
+    }
+
+    private void tickServer(Level level) {
+        long generated = SolarGeneration.calculate(level.getDayTime(), level.canSeeSky(worldPosition.above()),
+                level.isRaining(), level.isThundering(), SunlightPower.CONFIG.generationPerTick,
+                SunlightPower.CONFIG.rainMultiplier, SunlightPower.CONFIG.thunderMultiplier);
+        if (generated > 0) {
+            energy = Math.min(SunlightPower.CONFIG.capacity, energy + generated);
+            setChanged();
+        }
+        if (energy > 0) {
+            long charged = SunlightPower.chargeSlot(this, Math.min(SunlightPower.CONFIG.chargingSlotRate, energy));
+            if (charged > 0) {
+                energy -= charged;
+                setChanged();
+            }
+            for (Direction direction : Direction.values()) {
+                if (direction == Direction.UP) {
+                    continue;
+                }
+                long transferred = SunlightPower.transferToFabric(this, direction,
+                        Math.min(SunlightPower.CONFIG.maxOutputPerSide, energy));
+                if (transferred > 0) {
+                    energy -= transferred;
+                    setChanged();
+                }
+            }
+        }
+        interactionRequested = false;
+    }
+
+    public long getEnergy() {
+        return energy;
+    }
+
+    public long getCapacity() {
+        return SunlightPower.CONFIG.capacity;
+    }
+
+    public void setEnergy(long value) {
+        energy = Math.max(0, Math.min(getCapacity(), value));
+        setChanged();
+    }
+
+    public ItemStack getChargingStack() {
+        return chargingStack;
+    }
+
+    public void setChargingStack(ItemStack stack) {
+        chargingStack = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
+        setChanged();
+    }
+
+    @Override public int getContainerSize() { return 1; }
+    @Override public boolean isEmpty() { return chargingStack.isEmpty(); }
+    @Override public ItemStack getItem(int slot) { return slot == 0 ? chargingStack : ItemStack.EMPTY; }
+    @Override public ItemStack removeItem(int slot, int amount) {
+        if (slot != 0 || chargingStack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack result = chargingStack.split(Math.min(1, amount));
+        setChanged();
+        return result;
+    }
+    @Override public ItemStack removeItemNoUpdate(int slot) {
+        if (slot != 0) return ItemStack.EMPTY;
+        ItemStack result = chargingStack;
+        chargingStack = ItemStack.EMPTY;
+        return result;
+    }
+    @Override public void setItem(int slot, ItemStack stack) { if (slot == 0) setChargingStack(stack); }
+    @Override public void clearContent() { chargingStack = ItemStack.EMPTY; setChanged(); }
+    @Override public boolean stillValid(Player player) { return Container.stillValidBlockEntity(this, player); }
+    @Override public boolean canPlaceItem(int slot, ItemStack stack) {
+        return slot == 0 && stack.getCount() == 1 && SunlightPower.canChargeItem(stack);
+    }
+    @Override public Component getDisplayName() { return Component.translatable("block.sunlight_power.solar_panel"); }
+    @Override public AbstractContainerMenu createMenu(int syncId, Inventory inventory, Player player) {
+        return new SolarPanelMenu(syncId, inventory, this);
+    }
+    @Override public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buffer) {
+        buffer.writeBlockPos(worldPosition);
+    }
+
+    public void markInteractionRequested() {
+        interactionRequested = true;
+    }
+
+    public boolean consumeInteractionRequest() {
+        boolean requested = interactionRequested;
+        interactionRequested = false;
+        return requested;
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
+        tag.putLong("Energy", energy);
+        if (!chargingStack.isEmpty()) {
+            tag.put("ChargingStack", chargingStack.save(new CompoundTag()));
+        }
+        SunlightPower.saveAe2(this, tag);
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        energy = Math.max(0, Math.min(SunlightPower.CONFIG.capacity, tag.getLong("Energy")));
+        chargingStack = tag.contains("ChargingStack") ? ItemStack.of(tag.getCompound("ChargingStack")) : ItemStack.EMPTY;
+        if (chargingStack.getCount() > 1) {
+            chargingStack.setCount(1);
+        }
+        SunlightPower.loadAe2(this, tag);
+    }
+
+    @Override
+    public void setRemoved() {
+        SunlightPower.removeAe2(this);
+        super.setRemoved();
+    }
+
+    public void dropContents() {
+        if (level != null && !chargingStack.isEmpty()) {
+            Block.popResource(level, worldPosition, chargingStack);
+            chargingStack = ItemStack.EMPTY;
+        }
+    }
+}

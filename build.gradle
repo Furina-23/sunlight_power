@@ -16,11 +16,7 @@ plugins {
 apply plugin: 'fabric-loom'
 
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+	maven { url = 'https://maven.teamresourceful.com/repository/maven-public/' }
 }
 
 loom {
@@ -42,6 +38,10 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+	// Fabric Energy API is loaded through an optional compatibility entry point.
+	modCompileOnly "teamreborn:energy:${project.energy_version}"
+	modCompileOnly "appeng:appliedenergistics2-fabric:${project.ae2_version}"
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
 }
 
 processResources {
@@ -55,6 +55,7 @@ processResources {
 
 tasks.withType(JavaCompile).configureEach {
 	it.options.release = 17
+	it.options.encoding = 'UTF-8'
 }
 
 java {
@@ -91,4 +92,8 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()
 }

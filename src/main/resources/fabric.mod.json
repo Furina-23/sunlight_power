@@ -1,30 +1,27 @@
 {
-	"schemaVersion": 1,
-	"id": "sunlight_power",
-	"version": "${version}",
-	"name": "阳光动力",
-	"description": "提供太阳能发电、储能和能源输出的 Fabric 模组。",
-	"authors": [
-		"Furina-23"
-	],
-	"contact": {
-		"sources": "https://github.com/Furina-23/sunlight_power"
-	},
-	"license": "GPL-3.0-or-later",
-	"icon": "assets/sunlight_power/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"com.furina23.sunlightpower.SunlightPower"
-		],
-		"client": [
-			"com.furina23.sunlightpower.client.SunlightPowerClient"
-		]
-	},
-	"depends": {
-		"fabricloader": ">=0.19.5",
-		"minecraft": "~1.20.1",
-		"java": ">=17",
-		"fabric-api": ">=0.92.12"
-	}
+  "schemaVersion": 1,
+  "id": "sunlight_power",
+  "version": "${version}",
+  "name": "Sunlight Power",
+  "description": "A Fabric solar power generation and storage mod.",
+  "authors": ["Furina-23"],
+  "contact": {"sources": "https://github.com/Furina-23/sunlight_power"},
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/sunlight_power/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.furina23.sunlightpower.SunlightPower"],
+    "client": ["com.furina23.sunlightpower.client.SunlightPowerClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": ">=0.92.12"
+  },
+  "suggests": {
+    "ae2": "15.4.11",
+    "jei": "*",
+    "emi": "*"
+  }
 }
