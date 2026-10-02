@@ -38,3 +38,8 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# Local planning and manual test records
+TODO.md
+人工测试文档.md
+变更记录.md
