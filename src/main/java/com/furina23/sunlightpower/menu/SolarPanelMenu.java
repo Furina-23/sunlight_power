@@ -25,7 +25,7 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
                         return switch (index) {
                             case 0 -> (int) Math.min(Integer.MAX_VALUE, panel.getEnergy());
                             case 1 -> (int) Math.min(Integer.MAX_VALUE, panel.getCapacity());
-                            case 2 -> (int) Math.min(Integer.MAX_VALUE, SunlightPower.CONFIG.generationPerTick);
+                            case 2 -> (int) Math.min(Integer.MAX_VALUE, panel.getCurrentGeneration());
                             case 3 -> (int) Math.min(Integer.MAX_VALUE, SunlightPower.CONFIG.maxOutputPerSide);
                             default -> 0;
                         };
@@ -42,10 +42,10 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
         this.access = access;
         this.data = data;
         checkContainerSize(container, 1);
-        addSlot(new ChargeSlot(container, 0, 37, 20));
+        addSlot(new ChargeSlot(container, 0, 143, 8));
         Container upgrades = new SimpleContainer(5);
         for (int i = 0; i < 5; i++) {
-            addSlot(new Slot(upgrades, i, 70 + i * 18, 20) {
+            addSlot(new Slot(upgrades, i, 8 + i * 18, 56) {
                 @Override public boolean mayPlace(ItemStack stack) { return false; }
                 @Override public boolean mayPickup(Player player) { return false; }
             });
@@ -63,11 +63,11 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
     private void addPlayerInventory(Inventory inventory) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 84 + row * 18));
+                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 91 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 142));
+            addSlot(new Slot(inventory, column, 8 + column * 18, 145));
         }
     }
 

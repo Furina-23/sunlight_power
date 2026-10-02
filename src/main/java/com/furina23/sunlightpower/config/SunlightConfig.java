@@ -19,8 +19,8 @@ public final class SunlightConfig {
     public long generationPerTick = 8;
     public long capacity = 8000;
     public long maxOutputPerSide = 16;
-    public double rainMultiplier = 0.25;
-    public double thunderMultiplier = 0.1;
+    public double rainMultiplier = 0.5;
+    public double thunderMultiplier = 0.5;
     public long chargingSlotRate = 16;
 
     public void validate() {

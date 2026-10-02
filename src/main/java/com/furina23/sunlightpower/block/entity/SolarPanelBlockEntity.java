@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public final class SolarPanelBlockEntity extends BlockEntity implements Container, ExtendedScreenHandlerFactory {
     private long energy;
+    private long currentGeneration;
     private ItemStack chargingStack = ItemStack.EMPTY;
     private boolean interactionRequested;
 
@@ -34,9 +35,12 @@ public final class SolarPanelBlockEntity extends BlockEntity implements Containe
     }
 
     private void tickServer(Level level) {
-        long generated = SolarGeneration.calculate(level.getDayTime(), level.canSeeSky(worldPosition.above()),
+        boolean skyVisible = level.canSeeSky(worldPosition.above())
+                && level.getBlockState(worldPosition.above()).isAir();
+        long generated = SolarGeneration.calculate(level.getDayTime(), skyVisible,
                 level.isRaining(), level.isThundering(), SunlightPower.CONFIG.generationPerTick,
                 SunlightPower.CONFIG.rainMultiplier, SunlightPower.CONFIG.thunderMultiplier);
+        currentGeneration = generated;
         if (generated > 0) {
             energy = Math.min(SunlightPower.CONFIG.capacity, energy + generated);
             setChanged();
@@ -64,6 +68,10 @@ public final class SolarPanelBlockEntity extends BlockEntity implements Containe
 
     public long getEnergy() {
         return energy;
+    }
+
+    public long getCurrentGeneration() {
+        return currentGeneration;
     }
 
     public long getCapacity() {
