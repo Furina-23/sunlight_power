@@ -10,8 +10,6 @@ Mod ID：`sunlight_power`
 
 Minecraft 1.20.1、Fabric Loader 0.19.5、Fabric API 0.92.12、Java 17。
 
-SolarFluxReborn 和 Applied Energistics 2 仅作为功能思路与兼容接口的参考，本项目独立实现，不复制参考模组的源代码或资源。
-
 ## 构建
 
 ```text
