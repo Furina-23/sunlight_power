@@ -1,5 +1,11 @@
 {
   "block.sunlight_power.solar_panel": "阳光动力 I",
   "item.sunlight_power.solar_panel": "阳光动力 I",
-  "itemGroup.sunlight_power.main": "阳光动力"
+  "itemGroup.sunlight_power.main": "阳光动力",
+  "gui.sunlight_power.stored": "已存储：%s FE",
+  "gui.sunlight_power.stored_total": "已存储：%s/%s FE",
+  "gui.sunlight_power.capacity": "容量：%s FE",
+  "gui.sunlight_power.generation": "生成：%s FE/tick",
+  "gui.sunlight_power.efficiency": "效率：%s%%",
+  "gui.sunlight_power.sun_intensity": "光照等级：%s%%"
 }

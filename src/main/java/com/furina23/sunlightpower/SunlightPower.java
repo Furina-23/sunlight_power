@@ -34,8 +34,7 @@ public final class SunlightPower implements ModInitializer {
 
     public static final Block SOLAR_PANEL = Registry.register(BuiltInRegistries.BLOCK, id("solar_panel"),
             new SolarPanelBlock(BlockBehaviour.Properties.copy(Blocks.GLASS)
-                    .sound(SoundType.METAL).noOcclusion().strength(0.3f, 6.0f)
-                    .requiresCorrectToolForDrops()));
+                    .sound(SoundType.METAL).noOcclusion().strength(0.3f, 6.0f)));
     public static final Item SOLAR_PANEL_ITEM = Registry.register(BuiltInRegistries.ITEM, id("solar_panel"),
             new SolarPanelItem(SOLAR_PANEL, new Item.Properties()));
     public static final BlockEntityType<SolarPanelBlockEntity> SOLAR_PANEL_ENTITY = Registry.register(
@@ -72,7 +71,7 @@ public final class SunlightPower implements ModInitializer {
     public static long chargeSlot(SolarPanelBlockEntity panel, long amount) {
         if (amount <= 0 || panel.getChargingStack().isEmpty()) return 0;
         if (FabricLoader.getInstance().isModLoaded("team_reborn_energy")) {
-            long result = FabricEnergyCompat.chargeItem(panel.getChargingStack(), amount);
+            long result = FabricEnergyCompat.chargeItem(panel, amount);
             if (result > 0) return result;
         }
         if (FabricLoader.getInstance().isModLoaded("ae2")) {

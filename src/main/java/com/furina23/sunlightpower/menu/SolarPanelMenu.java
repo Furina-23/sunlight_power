@@ -27,11 +27,12 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
                             case 1 -> (int) Math.min(Integer.MAX_VALUE, panel.getCapacity());
                             case 2 -> (int) Math.min(Integer.MAX_VALUE, panel.getCurrentGeneration());
                             case 3 -> (int) Math.min(Integer.MAX_VALUE, SunlightPower.CONFIG.maxOutputPerSide);
+                            case 4 -> (int) Math.min(Integer.MAX_VALUE, SunlightPower.CONFIG.generationPerTick);
                             default -> 0;
                         };
                     }
                     @Override public void set(int index, int value) { }
-                    @Override public int getCount() { return 4; }
+                    @Override public int getCount() { return 5; }
                 });
     }
 
@@ -42,10 +43,10 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
         this.access = access;
         this.data = data;
         checkContainerSize(container, 1);
-        addSlot(new ChargeSlot(container, 0, 143, 8));
+        addSlot(new ChargeSlot(container, 0, 151, 9));
         Container upgrades = new SimpleContainer(5);
         for (int i = 0; i < 5; i++) {
-            addSlot(new Slot(upgrades, i, 8 + i * 18, 56) {
+            addSlot(new Slot(upgrades, i, 9 + i * 18, 61) {
                 @Override public boolean mayPlace(ItemStack stack) { return false; }
                 @Override public boolean mayPickup(Player player) { return false; }
             });
@@ -57,17 +58,17 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
     public static SolarPanelMenu fromClient(int syncId, Inventory inventory, FriendlyByteBuf buffer) {
         buffer.readBlockPos();
         return new SolarPanelMenu(syncId, inventory, new SimpleContainer(1), ContainerLevelAccess.NULL,
-                new net.minecraft.world.inventory.SimpleContainerData(4));
+                new net.minecraft.world.inventory.SimpleContainerData(5));
     }
 
     private void addPlayerInventory(Inventory inventory) {
         for (int row = 0; row < 3; row++) {
             for (int column = 0; column < 9; column++) {
-                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 91 + row * 18));
+                addSlot(new Slot(inventory, column + row * 9 + 9, 8 + column * 18, 98 + row * 18));
             }
         }
         for (int column = 0; column < 9; column++) {
-            addSlot(new Slot(inventory, column, 8 + column * 18, 145));
+            addSlot(new Slot(inventory, column, 8 + column * 18, 156));
         }
     }
 
@@ -97,6 +98,7 @@ public final class SolarPanelMenu extends AbstractContainerMenu {
     public int capacity() { return data.get(1); }
     public int generation() { return data.get(2); }
     public int output() { return data.get(3); }
+    public int peakGeneration() { return data.get(4); }
 
     private static final class ChargeSlot extends Slot {
         private ChargeSlot(Container container, int index, int x, int y) { super(container, index, x, y); }

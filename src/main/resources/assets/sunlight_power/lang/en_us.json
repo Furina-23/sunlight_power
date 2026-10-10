@@ -1,5 +1,11 @@
 {
   "block.sunlight_power.solar_panel": "Sunlight Power I",
   "item.sunlight_power.solar_panel": "Sunlight Power I",
-  "itemGroup.sunlight_power.main": "Sunlight Power"
+  "itemGroup.sunlight_power.main": "Sunlight Power",
+  "gui.sunlight_power.stored": "Stored: %s FE",
+  "gui.sunlight_power.stored_total": "Stored: %s/%s FE",
+  "gui.sunlight_power.capacity": "Capacity: %s FE",
+  "gui.sunlight_power.generation": "Generation: %s FE/tick",
+  "gui.sunlight_power.efficiency": "Efficiency: %s%%",
+  "gui.sunlight_power.sun_intensity": "Light Level: %s%%"
 }

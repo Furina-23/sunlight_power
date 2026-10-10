@@ -3,6 +3,7 @@ package com.furina23.sunlightpower.compat;
 import com.furina23.sunlightpower.SunlightPower;
 import com.furina23.sunlightpower.block.entity.SolarPanelBlockEntity;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.core.Direction;
@@ -35,10 +36,9 @@ public final class FabricEnergyCompat {
         }
     }
 
-    public static long chargeItem(ItemStack stack, long amount) {
-        ContainerItemContext context = ContainerItemContext.withInitial(
-                net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(stack), 1);
-        EnergyStorage storage = EnergyStorage.ITEM.find(stack, context);
+    public static long chargeItem(SolarPanelBlockEntity panel, long amount) {
+        ContainerItemContext context = ContainerItemContext.ofSingleSlot(InventoryStorage.of(panel, null).getSlot(0));
+        EnergyStorage storage = context.find(EnergyStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) return 0;
         try (Transaction transaction = Transaction.openOuter()) {
             long inserted = storage.insert(amount, transaction);
@@ -48,8 +48,7 @@ public final class FabricEnergyCompat {
     }
 
     public static boolean canChargeItem(ItemStack stack) {
-        EnergyStorage storage = EnergyStorage.ITEM.find(stack, ContainerItemContext.withInitial(
-                net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(stack), 1));
+        EnergyStorage storage = EnergyStorage.ITEM.find(stack, ContainerItemContext.withConstant(stack));
         return storage != null && storage.supportsInsertion();
     }
 

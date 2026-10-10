@@ -5,47 +5,91 @@ import com.furina23.sunlightpower.menu.SolarPanelMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public final class SolarPanelScreen extends AbstractContainerScreen<SolarPanelMenu> {
+    private static final ResourceLocation BACKGROUND = new ResourceLocation(SunlightPower.MOD_ID, "textures/gui/solar.png");
+    private static final ResourceLocation ELEMENTS = new ResourceLocation(SunlightPower.MOD_ID, "textures/gui/elements.png");
+    private static final int GAUGE_WIDTH = 18;
+    private static final int GAUGE_HEIGHT = 50;
+    private static final int GAUGE_INNER_HEIGHT = 48;
+    private static final int SUN_X = 120;
+    private static final int ENERGY_X = 150;
+    private static final int GAUGE_Y = 40;
+
     public SolarPanelScreen(SolarPanelMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         imageWidth = 176;
-        imageHeight = 166;
+        imageHeight = 180;
     }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float delta, int mouseX, int mouseY) {
-        int left = leftPos;
-        int top = topPos;
-        graphics.fill(left, top, left + imageWidth, top + imageHeight, 0xff171a20);
-        graphics.fill(left + 5, top + 5, left + 171, top + 31, 0xff303640);
-        graphics.fill(left + 143, top + 8, left + 161, top + 26, 0xff353c47);
-        graphics.fill(left + 144, top + 9, left + 160, top + 25, 0xff9ca2a2);
-        graphics.fill(left + 122, top + 40, left + 138, top + 88, 0xff111318);
-        int generationHeight = (int) Math.min(46L, menu.generation() * 46L
-                / Math.max(1L, SunlightPower.CONFIG.generationPerTick));
-        graphics.fill(left + 123, top + 87 - generationHeight, left + 137, top + 87, 0xffe6b52e);
-        graphics.fill(left + 144, top + 40, left + 160, top + 88, 0xff111318);
-        int energyHeight = Math.min(46, menu.energy() * 46 / Math.max(1, menu.capacity()));
-        graphics.fill(left + 145, top + 87 - energyHeight, left + 159, top + 87, 0xffb73535);
+        graphics.blit(BACKGROUND, leftPos, topPos, 0, 0, imageWidth, imageHeight);
+        drawGauge(graphics, SUN_X, 32, intensity(), mouseX, mouseY);
+        drawGauge(graphics, ENERGY_X, 0, menu.capacity() > 0
+                ? (double) menu.energy() / menu.capacity() : 0, mouseX, mouseY);
         for (int i = 0; i < 5; i++) {
-            int slotLeft = left + 8 + i * 18;
-            graphics.fill(slotLeft, top + 56, slotLeft + 18, top + 74, 0xff3b3f43);
-            graphics.fill(slotLeft + 1, top + 57, slotLeft + 17, top + 73, 0xff969696);
+            graphics.blit(ELEMENTS, leftPos + 8 + i * 18, topPos + 60, 18, 0, 18, 18);
         }
-        graphics.fill(left + 5, top + 79, left + 171, top + 85, 0xff303640);
-        graphics.fill(left + 5, top + 88, left + 171, top + imageHeight, 0xff171a20);
+        graphics.blit(ELEMENTS, leftPos + 150, topPos + 8, 18, 18, 18, 18);
+    }
+
+    private void drawGauge(GuiGraphics graphics, int x, int sourceX, double fraction, int mouseX, int mouseY) {
+        int px = leftPos + x;
+        int py = topPos + GAUGE_Y;
+        graphics.blit(ELEMENTS, px + 1, py + 1, sourceX + 16, 64, 16, GAUGE_INNER_HEIGHT);
+        int filled = (int) Math.round(GAUGE_INNER_HEIGHT * Math.max(0, Math.min(1, fraction)));
+        if (filled > 0) {
+            graphics.blit(ELEMENTS, px + 1, py + 1 + GAUGE_INNER_HEIGHT - filled,
+                    sourceX, 64 + GAUGE_INNER_HEIGHT - filled, 16, filled);
+        }
+        graphics.blit(ELEMENTS, px, py, 64, 62, GAUGE_WIDTH, GAUGE_HEIGHT);
+        if (isGaugeHovered(x, mouseX, mouseY)) {
+            graphics.fill(px + 1, py + 1, px + 17, py + 49, 0x88ffffff);
+            graphics.blit(ELEMENTS, px, py, 82, 62, GAUGE_WIDTH, GAUGE_HEIGHT);
+        }
+    }
+
+    private double intensity() {
+        return menu.peakGeneration() > 0
+                ? (double) menu.generation() / menu.peakGeneration() : 0;
+    }
+
+    private boolean isGaugeHovered(int x, int mouseX, int mouseY) {
+        return mouseX >= leftPos + x && mouseX < leftPos + x + GAUGE_WIDTH
+                && mouseY >= topPos + GAUGE_Y && mouseY < topPos + GAUGE_Y + GAUGE_HEIGHT;
     }
 
     @Override
     protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
-        graphics.drawString(font, "阳光动力 I", 8, 11, 0xfff4f0df, false);
-        graphics.drawString(font, "⚡", 148, 13, 0xff555555, false);
-        graphics.drawString(font, "发电: " + menu.generation() + " FE/tick", 8, 24, 0xffffd34e, false);
-        graphics.drawString(font, "储能: " + menu.energy() + " / " + menu.capacity() + " FE", 8, 40, 0xffff6a6a, false);
-        graphics.drawString(font, "效率: " + (menu.generation() * 100 / Math.max(1, SunlightPower.CONFIG.generationPerTick)) + "%", 8, 56, 0xffd9d9d9, false);
-        graphics.drawString(font, "输出上限: " + menu.output() + " FE/tick", 8, 72, 0xffa9b1be, false);
-        graphics.drawString(font, "物品栏", 8, 83, 0xffd9d9d9, false);
+        graphics.drawString(font, title, 8, 4, 0x404040, false);
+        graphics.drawString(font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+        graphics.pose().pushPose();
+        graphics.pose().translate(8, 14, 0);
+        graphics.pose().scale(0.9f, 0.9f, 1);
+        graphics.drawString(font, Component.translatable("gui.sunlight_power.stored", menu.energy()), 0, 0, 0x404040, false);
+        graphics.drawString(font, Component.translatable("gui.sunlight_power.capacity", menu.capacity()), 0, 10, 0x404040, false);
+        graphics.drawString(font, Component.translatable("gui.sunlight_power.generation", menu.generation()), 0, 20, 0x404040, false);
+        graphics.drawString(font, Component.translatable("gui.sunlight_power.efficiency",
+                Math.round(100 * intensity())), 0, 30, 0x404040, false);
+        graphics.pose().popPose();
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
+        renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, delta);
+        renderTooltip(graphics, mouseX, mouseY);
+        if (menu.getCarried().isEmpty()) {
+            if (isGaugeHovered(ENERGY_X, mouseX, mouseY)) {
+                graphics.renderTooltip(font, Component.translatable("gui.sunlight_power.stored_total",
+                        menu.energy(), menu.capacity()), mouseX, mouseY);
+            } else if (isGaugeHovered(SUN_X, mouseX, mouseY)) {
+                graphics.renderTooltip(font, Component.translatable("gui.sunlight_power.sun_intensity",
+                        Math.round(100 * intensity())), mouseX, mouseY);
+            }
+        }
     }
 }
