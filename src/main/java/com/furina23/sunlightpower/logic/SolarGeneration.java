@@ -2,13 +2,23 @@ package com.furina23.sunlightpower.logic;
 
 /** 无世界对象的发电计算，便于单元测试。 */
 public final class SolarGeneration {
+    public enum Dimension {
+        OVERWORLD,
+        NETHER,
+        END
+    }
+
     private SolarGeneration() {
     }
 
-    public static long calculate(long dayTime, boolean skyVisible, boolean raining, boolean thundering,
+    public static long calculate(Dimension dimension, long dayTime, boolean skyVisible, boolean raining,
+                                 boolean thundering,
                                  long baseGeneration, double rainMultiplier, double thunderMultiplier) {
         if (!skyVisible || baseGeneration <= 0) {
             return 0;
+        }
+        if (dimension == Dimension.NETHER || dimension == Dimension.END) {
+            return (long) Math.floor(baseGeneration * 0.8);
         }
         long time = Math.floorMod(dayTime, 24000L);
         if (time >= 12000L) {

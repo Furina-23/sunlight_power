@@ -37,7 +37,10 @@ public final class SolarPanelBlockEntity extends BlockEntity implements Containe
     private void tickServer(Level level) {
         boolean skyVisible = level.canSeeSky(worldPosition.above())
                 && level.getBlockState(worldPosition.above()).isAir();
-        long generated = SolarGeneration.calculate(level.getDayTime(), skyVisible,
+        SolarGeneration.Dimension dimension = level.dimension() == Level.NETHER
+            ? SolarGeneration.Dimension.NETHER
+            : level.dimension() == Level.END ? SolarGeneration.Dimension.END : SolarGeneration.Dimension.OVERWORLD;
+        long generated = SolarGeneration.calculate(dimension, level.getDayTime(), skyVisible,
                 level.isRaining(), level.isThundering(), SunlightPower.CONFIG.generationPerTick,
                 SunlightPower.CONFIG.rainMultiplier, SunlightPower.CONFIG.thunderMultiplier);
         currentGeneration = generated;
